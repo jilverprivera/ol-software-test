@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # api:
+  #   container_name: api-ol-software
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NODE_ENV=development
+  #     - DATABASE_HOST=postgres
+  #     - DATABASE_PORT=5432
+  #     - DATABASE_USER=postgres
+  #     - DATABASE_PASSWORD=postgres
+  #     - DATABASE_NAME=ol_software_db
+  #   depends_on:
+  #     - pg-ol-software
+  #   networks:
+  #     - ol-software-network
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+
+  pg-ol-software:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ol_software_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ol-software-network
+
+networks:
+  ol-software-network:
+    driver: bridge
+
+volumes:
+  postgres_data: 
