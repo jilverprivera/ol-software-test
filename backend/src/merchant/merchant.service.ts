@@ -49,6 +49,13 @@ export class MerchantService {
           registeredBy: {
             select: { name: true, email: true },
           },
+          establishments: {
+            select: {
+              name: true,
+              revenue: true,
+              employeeCount: true,
+            },
+          },
           updatedBy: {
             select: { name: true, email: true },
           },
