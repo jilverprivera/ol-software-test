@@ -1,38 +1,23 @@
-# Build stage
+
 FROM node:20-alpine AS builder
-
-# Set working directory
 WORKDIR /app
-
-# Copy package files
 COPY package.json yarn.lock ./
-
-# Install dependencies
-RUN yarn install --frozen-lockfile
-
-# Copy source code
+RUN yarn install
 COPY . .
-
-# Build application
+RUN npx prisma generate
 RUN yarn build
 
-# Production stage
 FROM node:20-alpine
-
-# Set working directory
+RUN apk add --no-cache netcat-openbsd
 WORKDIR /app
-
-# Copy package files
 COPY package.json yarn.lock ./
-
-# Install production dependencies only
-RUN yarn install --frozen-lockfile --production
-
-# Copy built application from builder stage
+RUN yarn install
+RUN yarn global add ts-node typescript
+COPY prisma ./prisma
+RUN npx prisma generate
 COPY --from=builder /app/dist ./dist
-
-# Expose application port
+COPY scripts/init.sh /app/init.sh
+COPY scripts/wait-for-it.sh /app/wait-for-it.sh
+RUN chmod +x /app/init.sh /app/wait-for-it.sh
 EXPOSE 3000
-
-# Start the application
-CMD ["yarn", "start:prod"] 
+CMD ["/app/init.sh"] 
