@@ -105,7 +105,12 @@ export class MerchantService {
   async create(createMerchantDto: CreateMerchantDto, userId: number) {
     const merchant = await this.prisma.merchant.create({
       data: {
-        ...createMerchantDto,
+        name: createMerchantDto.name,
+        email: createMerchantDto.email,
+        municipality: createMerchantDto.municipality,
+        phone: createMerchantDto.phone,
+        registrationDate: new Date(createMerchantDto.registrationDate),
+        status: createMerchantDto.status,
         registeredById: userId,
         updatedById: userId,
       },
@@ -118,7 +123,7 @@ export class MerchantService {
         },
       },
     });
-    if (createMerchantDto.employeeCount && createMerchantDto.revenue) {
+    if (createMerchantDto.employeeCount !== null && createMerchantDto.revenue !== null) {
       await this.prisma.establishment.create({
         data: {
           name: `Establishment ${merchant.name}`,
@@ -136,40 +141,15 @@ export class MerchantService {
   }
 
   async update(id: number, updateMerchantDto: UpdateMerchantDto, userId: number) {
-    await this.findOne(id);
+    const merchant = await this.findOne(id);
 
-    const merchant = await this.prisma.merchant.update({
+    const updatedMerchant = await this.prisma.merchant.update({
       where: { id },
       data: {
         name: updateMerchantDto.name,
         municipality: updateMerchantDto.municipality,
         phone: updateMerchantDto.phone,
         email: updateMerchantDto.email,
-        establishments:
-          updateMerchantDto.employeeCount !== null && updateMerchantDto.revenue !== null
-            ? {
-                updateMany: {
-                  where: {
-                    ownerId: id,
-                  },
-                  data: {
-                    employeeCount: Number(updateMerchantDto.employeeCount),
-                    revenue: Number(updateMerchantDto.revenue),
-                  },
-                },
-              }
-            : {
-                updateMany: {
-                  where: {
-                    ownerId: id,
-                  },
-                  data: {
-                    employeeCount: 0,
-                    revenue: 0,
-                  },
-                },
-              },
-        // registrationDate: updateMerchantDto.registrationDate,
         status: updateMerchantDto.status,
         updatedById: userId,
       },
@@ -183,8 +163,31 @@ export class MerchantService {
       },
     });
 
+    const establishmentData = {
+      employeeCount: updateMerchantDto.employeeCount !== null ? Number(updateMerchantDto.employeeCount) : 0,
+      revenue: updateMerchantDto.revenue !== null ? Number(updateMerchantDto.revenue) : 0,
+    };
+    if (merchant.establishments.length === 0) {
+      if (establishmentData.employeeCount > 0 && establishmentData.revenue > 0) {
+        await this.prisma.establishment.create({
+          data: {
+            ...establishmentData,
+            name: `Establishment ${merchant.name}`,
+            ownerId: merchant.id,
+            registeredById: userId,
+            updatedById: userId,
+          },
+        });
+      }
+    } else {
+      await this.prisma.establishment.updateMany({
+        where: { ownerId: id },
+        data: establishmentData,
+      });
+    }
+
     await this.cacheManager.del('merchants');
-    return merchant;
+    return updatedMerchant;
   }
 
   async updateStatus(id: number, updateStatusDto: UpdateMerchantStatusDto, userId: number) {
@@ -216,6 +219,7 @@ export class MerchantService {
     if (!userDB || userDB.role !== Role.ADMINISTRATOR) {
       throw new ForbiddenException('Only administrators can delete merchants');
     }
+    await this.prisma.establishment.deleteMany({ where: { ownerId: id } });
     await this.prisma.merchant.delete({ where: { id } });
     await this.cacheManager.del('merchants');
 
