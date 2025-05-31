@@ -2,7 +2,7 @@
 
 # Wait for database to be ready
 echo "Waiting for database to be ready..."
-/app/wait-for-it.sh postgres:5432 -t 60
+/app/wait-for-it.sh postgres:5432 -t 20
 
 # Run database migrations
 echo "Running database migrations..."
