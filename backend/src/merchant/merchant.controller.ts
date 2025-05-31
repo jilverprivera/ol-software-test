@@ -24,11 +24,11 @@ export class MerchantController {
     };
   }
 
-  @Get('/municipalities')
-  async getMunicipalities() {
-    const municipalities = await this.merchantService.getMunicipalities();
+  @Get('/cities')
+  async getCities() {
+    const cities = await this.merchantService.getCities();
     return {
-      data: { municipalities },
+      data: cities,
     };
   }
 
@@ -44,7 +44,7 @@ export class MerchantController {
   async create(@Body() createMerchantDto: CreateMerchantDto, @Req() req: CustomRequest) {
     const merchant = await this.merchantService.create(createMerchantDto, req.user.id);
     return {
-      data: { merchant },
+      data: merchant,
     };
   }
 
@@ -68,7 +68,7 @@ export class MerchantController {
   @UseGuards(RoleGuard)
   @Roles(Role.ADMINISTRATOR)
   async remove(@Param('id') id: string, @Req() req: CustomRequest) {
-    const result = await this.merchantService.remove(+id, req.user.role);
+    const result = await this.merchantService.remove(+id, req.user.id);
     return {
       ...result,
     };
@@ -77,12 +77,10 @@ export class MerchantController {
   @Get('/export/csv')
   @UseGuards(RoleGuard)
   @Roles(Role.ADMINISTRATOR)
-  @Header('Content-Type', 'text/csv')
-  @Header('Content-Disposition', 'attachment; filename=merchants.csv')
-  async exportCsv() {
-    const csvData = await this.merchantService.generateCsvData();
-    return {
-      data: csvData,
-    };
+  @Header('Content-Type', 'text/tab-separated-values; charset=utf-8')
+  @Header('Content-Disposition', 'attachment; filename=merchants.tsv')
+  async exportCsv(@Req() req: CustomRequest) {
+    const csvData = await this.merchantService.generateCsvData(req.user.id);
+    return csvData;
   }
 }

@@ -15,9 +15,9 @@ export class MerchantService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  async getMunicipalities(): Promise<string[]> {
-    const cachedMunicipalities = await this.cacheManager.get<string[]>('municipalities');
-    if (cachedMunicipalities) return cachedMunicipalities;
+  async getCities(): Promise<string[]> {
+    const cachedCities = await this.cacheManager.get<string[]>('cities');
+    if (cachedCities) return cachedCities;
 
     const merchants = await this.prisma.merchant.findMany({
       select: { municipality: true },
@@ -25,14 +25,14 @@ export class MerchantService {
       where: { status: 'ACTIVE' },
     });
 
-    const municipalities = merchants.map((merchant) => merchant.municipality);
-    await this.cacheManager.set('municipalities', municipalities, 3600000);
-    return municipalities;
+    const cities = merchants.map((merchant) => merchant.municipality);
+    await this.cacheManager.set('cities', cities, 3600000);
+    return cities;
   }
 
   async findAll(query: QueryMerchantDto) {
     const { page = 1, limit = 5, name, registrationDate, status } = query;
-    const skip = (page - 1) * limit;
+    const skip = (page - 1) * Number(limit);
 
     const where: Prisma.MerchantWhereInput = {
       ...(name && { name: { contains: name, mode: Prisma.QueryMode.insensitive } }),
@@ -44,7 +44,7 @@ export class MerchantService {
       this.prisma.merchant.findMany({
         where,
         skip,
-        take: limit,
+        take: Number(limit),
         include: {
           registeredBy: {
             select: { name: true, email: true },
@@ -82,6 +82,13 @@ export class MerchantService {
         registeredBy: {
           select: { name: true, email: true },
         },
+        establishments: {
+          select: {
+            name: true,
+            revenue: true,
+            employeeCount: true,
+          },
+        },
         updatedBy: {
           select: { name: true, email: true },
         },
@@ -111,8 +118,20 @@ export class MerchantService {
         },
       },
     });
+    if (createMerchantDto.employeeCount && createMerchantDto.revenue) {
+      await this.prisma.establishment.create({
+        data: {
+          name: `Establishment ${merchant.name}`,
+          revenue: Number(createMerchantDto.revenue),
+          employeeCount: Number(createMerchantDto.employeeCount),
+          ownerId: merchant.id,
+          registeredById: userId,
+          updatedById: userId,
+        },
+      });
+    }
 
-    await this.cacheManager.del('municipalities');
+    await this.cacheManager.del('merchants');
     return merchant;
   }
 
@@ -122,7 +141,36 @@ export class MerchantService {
     const merchant = await this.prisma.merchant.update({
       where: { id },
       data: {
-        ...updateMerchantDto,
+        name: updateMerchantDto.name,
+        municipality: updateMerchantDto.municipality,
+        phone: updateMerchantDto.phone,
+        email: updateMerchantDto.email,
+        establishments:
+          updateMerchantDto.employeeCount !== null && updateMerchantDto.revenue !== null
+            ? {
+                updateMany: {
+                  where: {
+                    ownerId: id,
+                  },
+                  data: {
+                    employeeCount: Number(updateMerchantDto.employeeCount),
+                    revenue: Number(updateMerchantDto.revenue),
+                  },
+                },
+              }
+            : {
+                updateMany: {
+                  where: {
+                    ownerId: id,
+                  },
+                  data: {
+                    employeeCount: 0,
+                    revenue: 0,
+                  },
+                },
+              },
+        // registrationDate: updateMerchantDto.registrationDate,
+        status: updateMerchantDto.status,
         updatedById: userId,
       },
       include: {
@@ -135,7 +183,7 @@ export class MerchantService {
       },
     });
 
-    await this.cacheManager.del('municipalities');
+    await this.cacheManager.del('merchants');
     return merchant;
   }
 
@@ -158,25 +206,29 @@ export class MerchantService {
       },
     });
 
-    await this.cacheManager.del('municipalities');
+    await this.cacheManager.del('merchants');
     return merchant;
   }
 
-  async remove(id: number, userRole: Role) {
-    if (userRole !== Role.ADMINISTRATOR) {
+  async remove(id: number, userId: number) {
+    await this.findOne(id);
+    const userDB = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!userDB || userDB.role !== Role.ADMINISTRATOR) {
       throw new ForbiddenException('Only administrators can delete merchants');
     }
-
-    await this.findOne(id);
     await this.prisma.merchant.delete({ where: { id } });
-    await this.cacheManager.del('municipalities');
+    await this.cacheManager.del('merchants');
 
     return { message: 'Merchant deleted successfully' };
   }
 
-  async generateCsvData() {
+  async generateCsvData(userId: number) {
+    const userDB = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!userDB || userDB.role !== Role.ADMINISTRATOR) {
+      throw new ForbiddenException('Only administrators can export merchants');
+    }
+
     const merchants = await this.prisma.merchant.findMany({
-      where: { status: 'ACTIVE' },
       include: {
         establishments: {
           select: {
@@ -187,27 +239,46 @@ export class MerchantService {
       },
     });
 
-    const header =
-      'Nombre o razón social|Municipio|Teléfono|Correo Electrónico|Fecha de Registro|Estado|Cantidad de Establecimientos|Total Ingresos|Cantidad de Empleados';
+    const BOM = '\ufeff';
+    const headers = [
+      'Nombre o razón social',
+      'Municipio',
+      'Teléfono',
+      'Correo Electrónico',
+      'Fecha de Registro',
+      'Estado',
+      'Cantidad de Establecimientos',
+      'Total Ingresos',
+      'Cantidad de Empleados',
+    ];
+
+    const formatNumber = (num: number) => {
+      return new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+      }).format(num);
+    };
 
     const rows = merchants.map((merchant) => {
       const establishmentCount = merchant.establishments.length;
       const totalRevenue = merchant.establishments.reduce((sum, est) => sum + Number(est.revenue), 0);
       const totalEmployees = merchant.establishments.reduce((sum, est) => sum + est.employeeCount, 0);
 
-      return [
+      const row = [
         merchant.name,
         merchant.municipality,
         merchant.phone || '',
         merchant.email || '',
         merchant.registrationDate.toISOString().split('T')[0],
-        merchant.status,
-        establishmentCount,
-        totalRevenue.toFixed(2),
-        totalEmployees,
-      ].join('|');
+        merchant.status === 'ACTIVE' ? 'Activo' : 'Inactivo',
+        establishmentCount.toString(),
+        formatNumber(totalRevenue),
+        totalEmployees.toString(),
+      ];
+
+      return row.join('\t');
     });
 
-    return [header, ...rows].join('\n');
+    return BOM + [headers.join('\t'), ...rows].join('\r\n');
   }
 }

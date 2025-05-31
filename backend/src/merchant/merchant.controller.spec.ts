@@ -14,7 +14,7 @@ describe('MerchantController', () => {
 
   const mockMerchantService = {
     findAll: jest.fn(),
-    getMunicipalities: jest.fn(),
+    getCities: jest.fn(),
     findOne: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
@@ -60,16 +60,16 @@ describe('MerchantController', () => {
     });
   });
 
-  describe('getMunicipalities', () => {
+  describe('getCities', () => {
     it('should return all municipalities', async (): Promise<void> => {
       const mockMunicipalities = ['Municipality 1', 'Municipality 2'];
-      mockMerchantService.getMunicipalities.mockResolvedValue(mockMunicipalities);
+      mockMerchantService.getCities.mockResolvedValue(mockMunicipalities);
 
-      const result = await controller.getMunicipalities();
+      const result = await controller.getCities();
 
-      expect(merchantService.getMunicipalities).toHaveBeenCalled();
+      expect(merchantService.getCities).toHaveBeenCalled();
       expect(result).toEqual({
-        data: { municipalities: mockMunicipalities },
+        data: mockMunicipalities,
       });
     });
   });

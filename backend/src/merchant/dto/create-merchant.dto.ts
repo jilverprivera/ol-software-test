@@ -22,4 +22,12 @@ export class CreateMerchantDto {
 
   @IsEnum(Status)
   status: Status;
+
+  @IsOptional()
+  @IsString()
+  employeeCount?: string;
+
+  @IsOptional()
+  @IsString()
+  revenue?: string;
 }

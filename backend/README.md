@@ -37,18 +37,25 @@ JWT_EXPIRES_IN="24h"
 ## 🚀 Installation
 
 1. Install dependencies:
+
    ```bash
    yarn install
    ```
+
 2. Set up environment variables:
+
    ```bash
    cp env.example .env
    ```
+
 3. Start the database using Docker:
+
    ```bash
    docker-compose up -d pg-ol-software
    ```
+
 4. Run Prisma migrations:
+
    ```bash
    npx prisma migrate dev
    ```
@@ -56,17 +63,20 @@ JWT_EXPIRES_IN="24h"
 ## 🏃‍♂️ Running the Application
 
 ### Development Mode
+
 ```bash
 yarn start:dev
 ```
 
 ### Production Mode
+
 ```bash
 yarn build
 yarn start:prod
 ```
 
 ### Debug Mode
+
 ```bash
 yarn start:debug
 ```
@@ -109,6 +119,7 @@ services:
 ## 🧪 Testing
 
 ### Running Tests
+
 ```bash
 # Unit tests
 yarn test
