@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 
 import { getToken, isTokenValid } from '@/lib/auth';
@@ -13,6 +13,7 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const router = useRouter();
+  const pathname = usePathname();
   const { authStatus, setAuthStatus, setAccessToken, setData } = useAuth();
 
   useEffect(() => {
@@ -31,14 +32,8 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       }
     };
 
-    if (authStatus === 'checking') {
-      validateToken();
-    }
-
-    if (authStatus === 'unauthenticated') {
-      router.replace('/login');
-    }
-  }, [authStatus, router, setAuthStatus, setAccessToken, setData]);
+    validateToken();
+  }, [authStatus, router, setAuthStatus, setAccessToken, setData, pathname]);
 
   if (authStatus === 'checking') {
     return <Loader />;

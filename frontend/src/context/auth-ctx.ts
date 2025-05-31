@@ -11,6 +11,7 @@ interface AuthStore extends AuthState {
   setAuthStatus: (authStatus: 'authenticated' | 'unauthenticated' | 'checking') => void;
   setAccessToken: (accessToken: string | null) => void;
   setData: (data: IUser) => void;
+  signOut: () => void;
 }
 
 export const useAuth = create<AuthStore>()((set) => ({
@@ -21,4 +22,5 @@ export const useAuth = create<AuthStore>()((set) => ({
   setAuthStatus: (authStatus: 'authenticated' | 'unauthenticated' | 'checking') => set({ authStatus }),
   setAccessToken: (accessToken: string | null) => set({ accessToken }),
   setData: (data: IUser) => set({ data }),
+  signOut: () => set({ authStatus: 'unauthenticated', accessToken: null, data: null }),
 }));
