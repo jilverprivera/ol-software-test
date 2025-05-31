@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom';
 
-// Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter() {
     return {
@@ -12,14 +11,13 @@ jest.mock('next/navigation', () => ({
   },
   usePathname() {
     return '/login';
-  }
+  },
 }));
 
-// Mock ResizeObserver
 class ResizeObserver {
   observe() { }
   unobserve() { }
   disconnect() { }
 }
 
-global.ResizeObserver = ResizeObserver; 
+global.ResizeObserver = ResizeObserver;

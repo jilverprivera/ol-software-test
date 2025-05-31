@@ -91,7 +91,7 @@ export default function HomePage() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/update-form/${row.id}`}>
+                            <Link href={`/update-form/${row.id}`} aria-label="Editar">
                               <Edit width={16} />
                             </Link>
                           </Button>
@@ -107,6 +107,7 @@ export default function HomePage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleUpdateMerchantStatus(row.id, row.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')}
+                            aria-label={row.status === 'ACTIVE' ? 'Inactivar' : 'Activar'}
                           >
                             {row.status === 'ACTIVE' ? (
                               <CircleX width={16} className=" text-red-500" />
@@ -123,7 +124,7 @@ export default function HomePage() {
                       {data?.role === 'Administrador' && (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteMerchant(row.id)}>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteMerchant(row.id)} aria-label="Eliminar">
                               <Trash2 width={16} />
                             </Button>
                           </TooltipTrigger>

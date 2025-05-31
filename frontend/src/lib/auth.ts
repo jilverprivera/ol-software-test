@@ -9,7 +9,6 @@ export const isTokenValid = (token: string | null): boolean => {
   if (!token) return false;
 
   try {
-    // Decode the token and check expiration
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
@@ -23,7 +22,8 @@ export const isTokenValid = (token: string | null): boolean => {
     const currentTime = Math.floor(Date.now() / 1000);
 
     return exp > currentTime;
-  } catch (error) {
+  } catch (e) {
+    console.error(e);
     return false;
   }
 };
