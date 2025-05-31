@@ -2,6 +2,9 @@
   "name": "ol-software-frontend",
   "version": "0.1.0",
   "private": true,
+  "author": "Jilver Pacheco <jilverpacheco@gmail.com>",
+  "license": "UNLICENSED",
+  "description": "Technical test for OL Software",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
