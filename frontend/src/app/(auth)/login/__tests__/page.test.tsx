@@ -5,20 +5,17 @@ import { useAuth } from '@/context/auth-ctx';
 import { getToken, isTokenValid } from '@/lib/auth';
 import { Mock } from 'jest-mock';
 
-// Mock the auth functions
 jest.mock('@/lib/auth', () => ({
   getToken: jest.fn(),
   isTokenValid: jest.fn(),
 }));
 
-// Mock Zustand store
 jest.mock('@/context/auth-ctx', () => ({
   useAuth: jest.fn(),
 }));
 
 describe('LoginPage', () => {
   beforeEach(() => {
-    // Clear all mocks before each test
     jest.clearAllMocks();
     (useAuth as unknown as Mock).mockImplementation(() => ({
       authStatus: 'checking',
@@ -46,7 +43,6 @@ describe('LoginPage', () => {
 
     render(<LoginPage />);
 
-    // Wait for the auth check to complete
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /iniciar sesión/i })).toBeInTheDocument();
     });
@@ -90,4 +86,4 @@ describe('LoginPage', () => {
       expect(mockSetAccessToken).toHaveBeenCalledWith('valid-token');
     });
   });
-}); 
+});
