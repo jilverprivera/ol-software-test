@@ -1,98 +1,152 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# OL Software Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend service for the OL Software technical test, built with NestJS, PostgreSQL, and Prisma.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🛠 Tech Stack
 
-## Description
+- **Framework:** NestJS v11
+- **Database:** PostgreSQL 17
+- **ORM:** Prisma
+- **Authentication:** Passport JWT
+- **Language:** TypeScript
+- **Docker Support:** Yes
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📋 Prerequisites
 
-## Project setup
+- Node.js (version specified in .nvmrc)
+- Docker and Docker Compose
+- PostgreSQL (if running locally)
+- yarn package manager
 
-```bash
-$ yarn install
+## 🔧 Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+# Database connection string
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/ol_software_db"
+
+# CORS configuration
+ALLOWED_ORIGINS="http://localhost:3000,http://localhost:5173"
+
+# JWT Configuration
+JWT_SECRET_KEY="your-secret-key"
+JWT_EXPIRES_IN="24h"
 ```
 
-## Compile and run the project
+## 🚀 Installation
 
+1. Install dependencies:
+   ```bash
+   yarn install
+   ```
+2. Set up environment variables:
+   ```bash
+   cp env.example .env
+   ```
+3. Start the database using Docker:
+   ```bash
+   docker-compose up -d pg-ol-software
+   ```
+4. Run Prisma migrations:
+   ```bash
+   npx prisma migrate dev
+   ```
+
+## 🏃‍♂️ Running the Application
+
+### Development Mode
 ```bash
-# development
-$ yarn run start
-
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+yarn start:dev
 ```
 
-## Run tests
-
+### Production Mode
 ```bash
-# unit tests
-$ yarn run test
+yarn build
+yarn start:prod
+```
+
+### Debug Mode
+```bash
+yarn start:debug
+```
+
+## 🐳 Docker Support
+
+The application includes Docker configuration for both development and production environments.
+
+### Docker Compose Configuration
+
+```yaml
+services:
+  # API Service (commented out by default)
+  api:
+    container_name: api-ol-software
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_NAME=ol_software_db
+
+  # PostgreSQL Service
+  pg-ol-software:
+    image: postgres:17-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=ol_software_db
+```
+
+## 🧪 Testing
+
+### Running Tests
+```bash
+# Unit tests
+yarn test
 
 # e2e tests
-$ yarn run test:e2e
+yarn test:e2e
 
-# test coverage
-$ yarn run test:cov
+# Test coverage
+yarn test:cov
 ```
 
-## Deployment
+## 📚 Available Scripts
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- `yarn build`: Build the application
+- `yarn format`: Format code using Prettier
+- `yarn lint`: Lint code using ESLint
+- `yarn test`: Run tests
+- `yarn test:watch`: Run tests in watch mode
+- `yarn test:cov`: Generate test coverage report
+- `yarn test:debug`: Debug tests
+- `yarn test:e2e`: Run end-to-end tests
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## 📁 Project Structure
 
-```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+```
+backend/
+├── src/
+│   ├── auth/           # Authentication module
+│   ├── establishment/  # Establishment module
+│   ├── merchant/       # Merchant module
+│   ├── helpers/        # Helper functions
+│   └── prisma/         # Prisma configuration
+├── prisma/
+│   └── migrations/     # Database migrations
+├── test/              # Test files
+└── docker-compose.yml # Docker configuration
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## ✍️ Author
 
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Jilver Pacheco - [jilverpacheco@gmail.com](mailto:jilverpacheco@gmail.com)
