@@ -47,9 +47,11 @@ export const Header = () => {
             </nav>
           </>
         )}
-        <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <Menu className="h-6 w-6 text-gray-600" />
-        </button>
+        {authStatus === 'authenticated' && (
+          <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <Menu className="h-6 w-6 text-gray-600" />
+          </button>
+        )}
 
         {authStatus === 'authenticated' && data && (
           <DropdownMenu>

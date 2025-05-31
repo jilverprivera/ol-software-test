@@ -40,8 +40,8 @@ export default function HomePage() {
       <Header />
       <Container>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold mb-4">Lista Formularios Creados</h1>
-          <div className="flex justify-end space-x-4">
+          <h1 className="text-2xl font-bold mb-4 text-center md:text-left">Lista Formularios Creados</h1>
+          <div className="flex flex-col md:flex-row md:justify-end space-y-2 md:space-y-0 md:space-x-4">
             <Button asChild>
               <Link href="/form">Crear Formulario Nuevo</Link>
             </Button>
