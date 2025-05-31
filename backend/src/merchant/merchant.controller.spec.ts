@@ -107,7 +107,7 @@ describe('MerchantController', () => {
 
       expect(merchantService.create).toHaveBeenCalledWith(createDto, mockRequest.user.id);
       expect(result).toEqual({
-        data: { merchant: mockMerchant },
+        data: mockMerchant,
       });
     });
   });
@@ -156,7 +156,7 @@ describe('MerchantController', () => {
   describe('remove', () => {
     it('should remove a merchant', async (): Promise<void> => {
       const mockRequest = {
-        user: { role: Role.ADMINISTRATOR },
+        user: { role: Role.ADMINISTRATOR, id: 1 },
       } as CustomRequest;
       const mockResult = { success: true };
 
@@ -164,7 +164,7 @@ describe('MerchantController', () => {
 
       const result = await controller.remove('1', mockRequest);
 
-      expect(merchantService.remove).toHaveBeenCalledWith(1, mockRequest.user.role);
+      expect(merchantService.remove).toHaveBeenCalledWith(1, mockRequest.user.id);
       expect(result).toEqual(mockResult);
     });
   });
@@ -172,14 +172,16 @@ describe('MerchantController', () => {
   describe('exportCsv', () => {
     it('should export merchants as CSV', async (): Promise<void> => {
       const mockCsvData = 'id,name\n1,Merchant 1';
+      const mockRequest = {
+        user: { id: 1 },
+      } as CustomRequest;
+
       mockMerchantService.generateCsvData.mockResolvedValue(mockCsvData);
 
-      const result = await controller.exportCsv();
+      const result = await controller.exportCsv(mockRequest);
 
-      expect(merchantService.generateCsvData).toHaveBeenCalled();
-      expect(result).toEqual({
-        data: mockCsvData,
-      });
+      expect(merchantService.generateCsvData).toHaveBeenCalledWith(mockRequest.user.id);
+      expect(result).toEqual(mockCsvData);
     });
   });
 });

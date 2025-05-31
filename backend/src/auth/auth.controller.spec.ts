@@ -3,6 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
+class LoginDto {
+  email: string;
+  password: string;
+}
+
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: AuthService;
@@ -32,17 +37,18 @@ describe('AuthController', () => {
 
   describe('login', () => {
     it('should call authService.login with correct credentials', async () => {
-      const loginDto = {
+      const loginDto: LoginDto = {
         email: 'test@example.com',
         password: 'password123',
       };
 
-      mockAuthService.login.mockResolvedValue({ token: 'mock-token' });
+      const mockResponse = { token: 'mock-token' };
+      mockAuthService.login.mockResolvedValue(mockResponse);
 
       const result = await controller.login(loginDto);
 
       expect(authService.login).toHaveBeenCalledWith(loginDto.email, loginDto.password);
-      expect(result).toEqual({ token: 'mock-token' });
+      expect(result).toEqual(mockResponse);
     });
   });
 });
